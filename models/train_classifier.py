@@ -17,6 +17,7 @@ import pickle
 from sqlalchemy import create_engine
 import re
 import nltk
+from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -29,7 +30,7 @@ from sklearn.metrics import fbeta_score, classification_report
 from sklearn.model_selection import GridSearchCV
 from scipy.stats.mstats import gmean
 
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'stopwords'])
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
     """
@@ -85,14 +86,22 @@ def tokenize(text):
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
+        
+    # text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower().strip())
 
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
-
+    default_stopwords = set(stopwords.words("english"))
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
+    '''
+    for tok in tokens:
+        if tok not in default_stopwords: # Remove stop words
+            clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+            clean_tokens.append(clean_tok)
+    '''
 
     return clean_tokens
 
