@@ -40,15 +40,17 @@ def clean_data(df):
         df -> clean data Pandas DataFrame
     """
     categories = df.categories.str.split(pat=';',expand=True)
-    row = categories.iloc[0,:]
-    category_colnames = row.apply(lambda x:x[:-2])
-    categories = df.categories.str.split(pat=';',expand=True)
     firstrow = categories.iloc[0,:]
     category_colnames = firstrow.apply(lambda x:x[:-2])
     categories.columns = category_colnames
     for column in categories:
         categories[column] = categories[column].str[-1]
         categories[column] = categories[column].astype(np.int)
+        
+    # "related" column has 0, 1, 2 values
+    # change 2 to 1, so that the value is only 1 or 0
+    categories['related'] = categories['related'].apply(lambda x: 1 if x == 2 else x)
+    
     df = df.drop('categories',axis=1)
     df = pd.concat([df,categories],axis=1)
     df = df.drop_duplicates()
